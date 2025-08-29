@@ -9,7 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 
 interface ProcessResult {
   success: boolean;
-  imageUrl?: string;
+  compressedImageUrl?: string;
+  encryptedImageUrl?: string;
   message: string;
   operation: 'encrypt' | 'decrypt';
 }
@@ -64,7 +65,8 @@ const Index = () => {
       if (data.success) {
         setResult({
           success: true,
-          imageUrl: data.imageUrl || URL.createObjectURL(selectedImage), // Fallback for demo
+          compressedImageUrl: data.compressedImageUrl,
+          encryptedImageUrl: data.encryptedImageUrl || URL.createObjectURL(selectedImage), // Fallback for demo
           message: `Image ${operation}ed successfully!`,
           operation,
         });
@@ -103,10 +105,10 @@ const Index = () => {
     setResult(null);
   };
 
-  const handleDownload = () => {
+  const handleDownload = (type: 'compressed' | 'encrypted') => {
     toast({
       title: "Download Started",
-      description: "Your file download has begun",
+      description: `Your ${type} image download has begun`,
     });
   };
 

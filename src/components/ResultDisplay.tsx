@@ -7,11 +7,12 @@ import { Download, CheckCircle, XCircle, Shield, Image as ImageIcon } from 'luci
 interface ResultDisplayProps {
   result: {
     success: boolean;
-    imageUrl?: string;
+    compressedImageUrl?: string;
+    encryptedImageUrl?: string;
     message: string;
     operation: 'encrypt' | 'decrypt';
   } | null;
-  onDownload?: () => void;
+  onDownload?: (type: 'compressed' | 'encrypted') => void;
   onReset: () => void;
 }
 
@@ -22,16 +23,16 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
 }) => {
   if (!result) return null;
 
-  const handleDownload = () => {
-    if (result.imageUrl && onDownload) {
+  const handleDownload = (imageUrl: string, type: 'compressed' | 'encrypted') => {
+    if (imageUrl && onDownload) {
       // Create download link
       const link = document.createElement('a');
-      link.href = result.imageUrl;
-      link.download = `${result.operation}ed-image.jpg`;
+      link.href = imageUrl;
+      link.download = `${type}-image.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      onDownload();
+      onDownload(type);
     }
   };
 
@@ -58,47 +59,109 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
           </AlertDescription>
         </Alert>
 
-        {result.success && result.imageUrl && (
-          <div className="space-y-4">
-            <div className="relative group rounded-lg overflow-hidden border border-border/50">
-              <img
-                src={result.imageUrl}
-                alt={`${result.operation}ed image`}
-                className="w-full h-48 object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <Button
-                  variant="default"
-                  onClick={handleDownload}
-                  className="bg-background/90 text-foreground hover:bg-background"
-                >
-                  <Download className="h-4 w-4" />
-                  Download
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-              <div className="flex items-center space-x-3">
-                <ImageIcon className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {result.operation === 'encrypt' ? 'Encrypted' : 'Decrypted'} Image
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Ready for download
-                  </p>
+        {result.success && (result.compressedImageUrl || result.encryptedImageUrl) && (
+          <div className="space-y-6">
+            {/* Compressed Image Section */}
+            {result.compressedImageUrl && (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <div className="h-2 w-2 rounded-full bg-success"></div>
+                  <h4 className="text-sm font-semibold text-foreground">Compressed Image</h4>
+                </div>
+                
+                <div className="relative group rounded-lg overflow-hidden border border-border/50">
+                  <img
+                    src={result.compressedImageUrl}
+                    alt="Compressed image"
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <Button
+                      variant="default"
+                      onClick={() => handleDownload(result.compressedImageUrl!, 'compressed')}
+                      className="bg-background/90 text-foreground hover:bg-background"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center space-x-3">
+                    <ImageIcon className="h-5 w-5 text-success" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        Compressed Image
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Optimized for storage
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleDownload(result.compressedImageUrl!, 'compressed')}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
                 </div>
               </div>
-              <Button
-                variant="secure"
-                size="sm"
-                onClick={handleDownload}
-              >
-                <Download className="h-4 w-4" />
-                Download
-              </Button>
-            </div>
+            )}
+
+            {/* Encrypted Image Section */}
+            {result.encryptedImageUrl && (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <div className="h-2 w-2 rounded-full bg-primary"></div>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    {result.operation === 'encrypt' ? 'Encrypted' : 'Decrypted'} Image
+                  </h4>
+                </div>
+                
+                <div className="relative group rounded-lg overflow-hidden border border-border/50">
+                  <img
+                    src={result.encryptedImageUrl}
+                    alt={`${result.operation}ed image`}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <Button
+                      variant="default"
+                      onClick={() => handleDownload(result.encryptedImageUrl!, 'encrypted')}
+                      className="bg-background/90 text-foreground hover:bg-background"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div className="flex items-center space-x-3">
+                    <ImageIcon className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {result.operation === 'encrypt' ? 'Encrypted' : 'Decrypted'} Image
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Ready for download
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="secure"
+                    size="sm"
+                    onClick={() => handleDownload(result.encryptedImageUrl!, 'encrypted')}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -110,15 +173,29 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
           >
             Process Another Image
           </Button>
-          {result.success && result.imageUrl && (
-            <Button
-              variant="gradient"
-              onClick={handleDownload}
-              className="flex-1"
-            >
-              <Download className="h-4 w-4" />
-              Download Result
-            </Button>
+          {result.success && (result.compressedImageUrl || result.encryptedImageUrl) && (
+            <div className="flex gap-3 flex-1">
+              {result.compressedImageUrl && (
+                <Button
+                  variant="gradient"
+                  onClick={() => handleDownload(result.compressedImageUrl!, 'compressed')}
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Compressed
+                </Button>
+              )}
+              {result.encryptedImageUrl && (
+                <Button
+                  variant="gradient"
+                  onClick={() => handleDownload(result.encryptedImageUrl!, 'encrypted')}
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4" />
+                  Download {result.operation === 'encrypt' ? 'Encrypted' : 'Decrypted'}
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>
